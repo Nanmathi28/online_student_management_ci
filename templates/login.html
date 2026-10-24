@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Login | Student Management{% endblock %}
+{% block content %}
+<h3>Staff Login</h3>
+<form method="post">
+  <label for="username">Username</label>
+  <input id="username" name="username" required autocomplete="username">
+  <label for="password">Password</label>
+  <input id="password" name="password" type="password" required autocomplete="current-password">
+  <button class="button" type="submit">Login</button>
+</form>
+<p><strong>Demo admin:</strong> admin / admin123</p>
+<p><strong>Demo staff:</strong> staff / staff123</p>
+{% endblock %}

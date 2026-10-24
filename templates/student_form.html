@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>{{ 'Edit Student' if student else 'Add Engineering Student' }}</h3>
+<form method="post">
+  <label for="name">Student Name</label>
+  <input id="name" name="name" value="{{ student.name if student else '' }}" required maxlength="100" autocomplete="name">
+
+  <label for="prn">PRN Number</label>
+  <input id="prn" name="prn" value="{{ student.prn if student else '' }}" required maxlength="40" autocomplete="off">
+
+  <label for="department">Department</label>
+  <input id="department" name="department" value="{{ student.department if student else '' }}" required maxlength="100" placeholder="e.g., Computer Engineering">
+
+  <button class="button" type="submit">{{ 'Update Student' if student else 'Save Student' }}</button>
+  <a href="{{ url_for('students') }}">Cancel</a>
+</form>
+{% endblock %}

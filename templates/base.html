@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Student Management{% endblock %}</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 980px; margin: 30px auto; padding: 0 18px; color: #222; }
+    header { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #ddd; padding-bottom:12px; }
+    a, button { cursor:pointer; } .button { display:inline-block; padding:8px 12px; background:#1457a6; color:white; border:0; border-radius:4px; text-decoration:none; }
+    input { display:block; width:100%; max-width:440px; padding:9px; margin:6px 0 14px; box-sizing:border-box; }
+    label { font-weight:bold; } table { border-collapse:collapse; width:100%; margin-top:18px; }
+    th, td { border:1px solid #ddd; padding:10px; text-align:left; } th { background:#f1f4f8; }
+    .message { padding:10px; margin:10px 0; background:#eef6ee; } .error { background:#ffecec; }
+    .actions { display:flex; gap:10px; align-items:center; } .inline { display:inline; }
+  </style>
+</head>
+<body>
+<header>
+  <h2>Online Student Management System</h2>
+  {% if session.get('user_id') %}
+    <div>Logged in: {{ session.get('username') }} ({{ session.get('role') }}) |
+      <a href="{{ url_for('logout') }}">Logout</a></div>
+  {% endif %}
+</header>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+    <div class="message {{ 'error' if category == 'error' else '' }}">{{ message }}</div>
+  {% endfor %}
+{% endwith %}
+<main>{% block content %}{% endblock %}</main>
+</body>
+</html>

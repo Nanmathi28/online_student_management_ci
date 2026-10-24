@@ -1,0 +1,80 @@
+name: Student Management CI
+
+on:
+  push:
+    branches: [main, develop, 'feature/**']
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-and-test:
+    name: Quality and tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.12']
+
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install pip-audit
+
+      - name: Validate Python syntax
+        run: python -m compileall -q app.py tests
+
+      - name: Lint source code
+        run: python -m ruff check .
+
+      - name: Audit dependencies for known vulnerabilities
+        run: python -m pip_audit -r requirements.txt
+
+      - name: Run automated tests and enforce coverage threshold
+        run: >-
+          python -m pytest
+          --cov=app
+          --cov-report=term-missing
+          --cov-report=xml:coverage.xml
+          --junitxml=junit.xml
+          --cov-fail-under=85
+
+      - name: Upload test and coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports-python-${{ matrix.python-version }}
+          path: |
+            coverage.xml
+            junit.xml
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Add result summary
+        if: always()
+        run: |
+          {
+            echo '## Student Management CI'
+            echo '- Python version: ${{ matrix.python-version }}'
+            echo '- Syntax validation, lint, dependency audit, tests, and coverage: see job steps'
+          } >> "$GITHUB_STEP_SUMMARY"
