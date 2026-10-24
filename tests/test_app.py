@@ -1,6 +1,6 @@
 import pytest
 
-from app import create_app
+from app import create_app, validate_student
 
 
 @pytest.fixture()
@@ -124,3 +124,86 @@ def test_logout(client):
     response = client.get("/logout", follow_redirects=True)
     assert b"Staff Login" in response.data
     assert b"You have been logged out." in response.data
+
+
+def test_validate_student_accepts_valid_details():
+    error = validate_student(
+        "Arya Student",
+        "PRN12345",
+        "Computer Engineering",
+    )
+    assert error is None
+
+
+@pytest.mark.parametrize(
+    ("name", "prn", "department", "expected_error"),
+    [
+        (
+            "",
+            "PRN12345",
+            "Computer Engineering",
+            "Student name, PRN, and department are required.",
+        ),
+        (
+            "A" * 101,
+            "PRN12345",
+            "Computer Engineering",
+            "Student name must be 100 characters or fewer.",
+        ),
+        (
+            "12345",
+            "PRN12345",
+            "Computer Engineering",
+            "Student name must contain at least one letter.",
+        ),
+        (
+            "Arya Student",
+            "A" * 41,
+            "Computer Engineering",
+            "PRN must be 40 characters or fewer.",
+        ),
+        (
+            "Arya Student",
+            "PRN@123",
+            "Computer Engineering",
+            "PRN can contain only letters, numbers, and internal hyphens.",
+        ),
+        (
+            "Arya Student",
+            "PRN12345",
+            "D" * 101,
+            "Department must be 100 characters or fewer.",
+        ),
+        (
+            "Arya Student",
+            "PRN12345",
+            "12345",
+            "Department must contain at least one letter.",
+        ),
+    ],
+)
+def test_validate_student_rejects_invalid_details(
+    name, prn, department, expected_error
+):
+    error = validate_student(name, prn, department)
+    assert error == expected_error
+
+
+def test_add_student_rejects_invalid_prn(client):
+    login(client)
+
+    response = client.post(
+        "/students/add",
+        data={
+            "name": "Arya Student",
+            "prn": "PRN@123",
+            "department": "Computer Engineering",
+        },
+        follow_redirects=True,
+    )
+
+    assert (
+        b"PRN can contain only letters, numbers, and internal hyphens."
+        in response.data
+    )
+    assert b"Student added successfully." not in response.data

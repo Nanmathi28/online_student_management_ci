@@ -1,4 +1,5 @@
 import os
+import re
 import sqlite3
 from functools import wraps
 from pathlib import Path
@@ -9,6 +10,32 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 def get_db_path(app):
     return app.config["DATABASE"]
+
+def validate_student(name, prn, department):
+    """Return a validation error message, or None if the inputs are valid."""
+
+    if not name or not prn or not department:
+        return "Student name, PRN, and department are required."
+
+    if len(name) > 100:
+        return "Student name must be 100 characters or fewer."
+
+    if not any(char.isalpha() for char in name):
+        return "Student name must contain at least one letter."
+
+    if len(prn) > 40:
+        return "PRN must be 40 characters or fewer."
+
+    if not re.fullmatch(r"[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*", prn):
+        return "PRN can contain only letters, numbers, and internal hyphens."
+
+    if len(department) > 100:
+        return "Department must be 100 characters or fewer."
+
+    if not any(char.isalpha() for char in department):
+        return "Department must contain at least one letter."
+
+    return None
 
 
 def connect_db(app):
@@ -133,20 +160,38 @@ def create_app(test_config=None):
             name = request.form.get("name", "").strip()
             prn = request.form.get("prn", "").strip().upper()
             department = request.form.get("department", "").strip()
-            if not all([name, prn, department]):
-                flash("Student name, PRN, and department are required.", "error")
-                return render_template("student_form.html", student=None)
+
+            # Validate all student fields
+            error = validate_student(name, prn, department)
+
+            if error:
+                flash(error, "error")
+                return render_template(
+                    "student_form.html",
+                    student=None
+                )
+
+            # Insert student record into the database
             try:
                 with connect_db(app) as db:
                     db.execute(
-                        "INSERT INTO students (name, prn, department) VALUES (?, ?, ?)",
+                        """
+                        INSERT INTO students (name, prn, department)
+                        VALUES (?, ?, ?)
+                        """,
                         (name, prn, department),
                     )
+
             except sqlite3.IntegrityError:
                 flash("A student with that PRN already exists.", "error")
-                return render_template("student_form.html", student=None)
+                return render_template(
+                    "student_form.html",
+                    student=None
+                )
+
             flash("Student added successfully.", "success")
             return redirect(url_for("students"))
+
         return render_template("student_form.html", student=None)
 
     @app.route("/students/<int:student_id>/edit", methods=["GET", "POST"])
