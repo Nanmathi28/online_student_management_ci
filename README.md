@@ -1,6 +1,6 @@
 # Online Student Management System
 
-[![Student Management CI](https://github.com/YOUR-USERNAME/online-student-management-system/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR-USERNAME/online-student-management-system/actions/workflows/ci.yml)
+[![Student Management CI](https://github.com/Nanmathi28/online_student_management_ci/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Nanmathi28/online_student_management_ci/actions/workflows/ci.yml)
 
 A Flask + SQLite web application for staff/admin login and student record CRUD operations. This project demonstrates an integrated Continuous Integration (CI) pipeline using GitHub Actions.
 
