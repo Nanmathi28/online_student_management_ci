@@ -12,6 +12,7 @@ A Flask + SQLite web application for staff/admin login and student record CRUD o
 - Python syntax validation, Ruff linting, dependency vulnerability audit, and coverage enforcement
 - GitHub Actions on pushes, pull requests, and manual workflow dispatch
 - Test and coverage reports retained as workflow artifacts
+- DEMO
 
 ## Demo credentials
 - Admin: `admin` / `admin123`
