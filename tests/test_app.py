@@ -207,3 +207,8 @@ def test_add_student_rejects_invalid_prn(client):
         in response.data
     )
     assert b"Student added successfully." not in response.data
+    
+def test_unauthenticated_user_cannot_access_dashboard(client):
+    response = client.get("/", follow_redirects=False)
+
+    assert response.status_code in (302, 401, 403)
